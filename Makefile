@@ -1,4 +1,4 @@
-.PHONY: help install dev build clean docker-build docker-up docker-down lint
+.PHONY: help install dev build clean test test-e2e lint format docker-build docker-up docker-down docker-logs
 
 # Colors for output
 BLUE := \033[0;34m
@@ -13,9 +13,13 @@ help:
 	@echo "$(GREEN)Development$(NC)"
 	@echo "  make help            Show this help message"
 	@echo "  make install         Install all dependencies"
-	@echo "  make dev             Run backend in watch mode (local)"
+	@echo "  make dev             Run backend in watch mode"
 	@echo "  make build           Compile TypeScript → JavaScript"
 	@echo "  make clean           Remove dist/ and node_modules/"
+	@echo ""
+	@echo "$(GREEN)Tests$(NC)"
+	@echo "  make test            Run unit tests"
+	@echo "  make test-e2e        Run e2e tests"
 	@echo ""
 	@echo "$(GREEN)Docker$(NC)"
 	@echo "  make docker-build    Build Docker image"
@@ -23,9 +27,9 @@ help:
 	@echo "  make docker-down     Stop services"
 	@echo "  make docker-logs     View docker-compose logs"
 	@echo ""
-	@echo "$(GREEN)Utilities$(NC)"
-	@echo "  make lint            Lint code (if eslint configured)"
-	@echo "  make format          Format code (if prettier configured)"
+	@echo "$(GREEN)Quality$(NC)"
+	@echo "  make lint            Lint code (ESLint)"
+	@echo "  make format          Format code (Prettier)"
 	@echo ""
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -37,7 +41,7 @@ install:
 
 dev:
 	@echo "$(GREEN)→ Starting backend in watch mode...$(NC)"
-	cd backend && pnpm dev
+	cd backend && pnpm run start:dev
 
 build:
 	@echo "$(GREEN)→ Building backend...$(NC)"
@@ -47,7 +51,28 @@ clean:
 	@echo "$(GREEN)→ Cleaning built artifacts...$(NC)"
 	rm -rf backend/dist
 	rm -rf backend/node_modules
-	docker system prune -f 2>/dev/null || true
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Tests
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test:
+	@echo "$(GREEN)→ Running unit tests...$(NC)"
+	cd backend && pnpm test
+
+test-e2e:
+	@echo "$(GREEN)→ Running e2e tests...$(NC)"
+	cd backend && pnpm run test:e2e
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Quality
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+lint:
+	@echo "$(GREEN)→ Linting code...$(NC)"
+	cd backend && pnpm lint
+
+format:
+	@echo "$(GREEN)→ Formatting code...$(NC)"
+	cd backend && pnpm format
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Docker
@@ -67,3 +92,7 @@ docker-down:
 docker-logs:
 	@echo "$(GREEN)→ Following logs...$(NC)"
 	docker compose logs -f
+
+docker-clean:
+	@echo "$(GREEN)→ Pruning Docker...$(NC)"
+	docker system prune -f 2>/dev/null || true

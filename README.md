@@ -6,12 +6,14 @@ A centralized project to manage the services and tools of my homelab.
 
 ```
 homelab/
-├── backend/          # Express API + TypeScript
+├── backend/          # NestJS API + TypeScript
 │   ├── src/
 │   ├── dist/
+│   ├── test/
 │   ├── Dockerfile
+│   ├── nest-cli.json
 │   └── tsconfig.json
-├── docker-compose
+├── docker-compose.yml
 ├── .env              # Environment variables
 ├── .env.example      # Variables template
 └── Makefile
@@ -40,7 +42,7 @@ The server starts by default on `http://localhost:3000`.
 ### With Docker
 
 ```bash
-# Build and start services
+# Start services
 make docker-up
 
 # View logs
@@ -52,13 +54,10 @@ make docker-down
 
 ## 📄 Configuration
 
-Create a `.env` file at the root (see `.env.example`):
+Environment files live at the **repo root**.
 
-```env
-BACKEND_PORT=3000
-```
-
-All environment variables are available in Docker services and for local development.
+**Local**: NestJS reads `.env` from the repo root via an absolute path.
+**Docker**: docker-compose injects `.env` directly into the container — no files are copied into the image.
 
 ## 🛠️ Available Commands
 
@@ -73,31 +72,35 @@ make help
 ### Backend
 
 - **Runtime** : Node.js 24.13 (Alpine in Docker)
-- **Framework** : Express 5.x
+- **Framework** : NestJS 11.x
 - **Language** : TypeScript 5.9+
 - **Package Manager** : pnpm 10.28+
-- **Build** : tsc (native compilation)
-- **Dev Server** : tsx (watch mode)
+- **Build** : `nest build` (webpack)
+- **Dev Server** : `nest start --watch`
+- **Tests** : Jest + Supertest
 
 ## 📝 Development
 
-### Compile and Test Locally
+### Build and Test Locally
 
 ```bash
-# Check TypeScript errors (without generating dist/)
-cd backend && pnpm tsc --noEmit
+# Run unit tests
+make test
+
+# Run e2e tests
+make test-e2e
 
 # Compile and generate dist/
 make build
 
 # Run compiled JavaScript
-node backend/dist/index.js
+node backend/dist/main.js
 ```
 
 ### Adding a New Service
 
 1. Create a folder at the root (e.g., `frontend/`, `database/`)
-2. Add appropriate scripts in its `package.json`
+2. Add the necessary scripts in its `package.json`
 3. Create a `Dockerfile` (if needed)
 4. Add a service in `docker-compose.yml`
 
@@ -109,9 +112,3 @@ The [Dockerfile](backend/Dockerfile) uses a **multi-stage build** to optimize im
 
 1. **Builder** : compiles TS, installs all dependencies
 2. **Runner** : lightweight final image with only compiled JS
-
-### Optimized Image
-
-- Base : `node:24.13-alpine`
-- No TypeScript in final image
-- Environment variables loaded from `.env` via docker-compose
