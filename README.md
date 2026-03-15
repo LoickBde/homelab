@@ -42,8 +42,11 @@ The server starts by default on `http://localhost:3000`.
 ### With Docker
 
 ```bash
-# Start services
+# Start all services (backend + database)
 make docker-up
+
+# Start only the database (for local backend development)
+make docker-db
 
 # View logs
 make docker-logs

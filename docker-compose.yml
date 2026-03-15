@@ -7,3 +7,15 @@ services:
     ports:
       - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
     restart: unless-stopped
+    depends_on:
+      - db
+  db:
+    image: postgres:18.3
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/postgresql
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: always
+volumes:
+  db_data:

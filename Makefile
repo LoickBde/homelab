@@ -1,4 +1,4 @@
-.PHONY: help install dev build clean test test-e2e lint format docker-build docker-up docker-down docker-logs
+.PHONY: help install dev build clean test test-e2e lint format docker-build docker-up docker-down docker-db docker-psql docker-logs docker-clean
 
 # Colors for output
 BLUE := \033[0;34m
@@ -23,9 +23,12 @@ help:
 	@echo ""
 	@echo "$(GREEN)Docker$(NC)"
 	@echo "  make docker-build    Build Docker image"
-	@echo "  make docker-up       Start services with docker-compose"
+	@echo "  make docker-up       Start all services (backend + database)"
+	@echo "  make docker-db       Start only PostgreSQL (for local dev)"
+	@echo "  make docker-psql     Connect to PostgreSQL shell"
 	@echo "  make docker-down     Stop services"
 	@echo "  make docker-logs     View docker-compose logs"
+	@echo "  make docker-clean    Prune unused Docker objects"
 	@echo ""
 	@echo "$(GREEN)Quality$(NC)"
 	@echo "  make lint            Lint code (ESLint)"
@@ -92,6 +95,10 @@ docker-down:
 docker-logs:
 	@echo "$(GREEN)→ Following logs...$(NC)"
 	docker compose logs -f
+
+docker-db:
+	@echo "$(GREEN)→ Starting only PostgreSQL database...$(NC)"
+	docker compose up -d db
 
 docker-clean:
 	@echo "$(GREEN)→ Pruning Docker...$(NC)"
